@@ -37,6 +37,18 @@ export function useUserProfile(userId?: number): UseUserProfileResult {
     void fetchUser();
   }, [fetchUser]);
 
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      void fetchUser();
+    };
+
+    window.addEventListener('user-profile-updated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('user-profile-updated', handleProfileUpdate);
+    };
+  }, [fetchUser]);
+
   return {
     user,
     loading,

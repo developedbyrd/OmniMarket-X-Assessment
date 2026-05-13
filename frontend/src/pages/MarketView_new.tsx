@@ -32,6 +32,7 @@ export function MarketView() {
   const { placeOrder, loading: orderLoading, error: orderError } = usePlaceOrder(async () => {
     // On success, refetch data
     await Promise.all([refetch(), refetchUser()]);
+    window.dispatchEvent(new Event('user-profile-updated'));
     // Reset form
     setShares('10');
     if (orderType === 'LIMIT') {
@@ -63,6 +64,7 @@ export function MarketView() {
         if (msg.type === 'TRADE_EXECUTED') {
           refetch();
           refetchUser();
+          window.dispatchEvent(new Event('user-profile-updated'));
         }
       },
     }

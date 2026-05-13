@@ -256,6 +256,7 @@ export function MarketView() {
 
       // Refresh data after order placement completes
       await refreshTradingData();
+      window.dispatchEvent(new Event('user-profile-updated'));
       
       // Keep success message visible for 2 seconds
       setTimeout(() => {
