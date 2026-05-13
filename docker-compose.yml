@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: omnimarket_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123456789}
+      POSTGRES_DB: ${POSTGRES_DB:-omnimarketdb}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-omnimarketdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+
+  api:
+    build: ./backend/api
+    container_name: omnimarket_api
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://postgres:123456789@db:5432/omnimarketdb}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend/api:/app
+    restart: unless-stopped
+
+  engine:
+    build: ./backend/engine
+    container_name: omnimarket_engine
+    environment:
+      - DATABASE_URL=${ENGINE_DATABASE_URL:-postgresql://postgres:123456789@db:5432/omnimarketdb?sslmode=disable}
+    ports:
+      - "${ENGINE_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: omnimarket_frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+volumes:
+  pgdata:
