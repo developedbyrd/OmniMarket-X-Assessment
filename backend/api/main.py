@@ -197,10 +197,18 @@ async def get_amm_price(market_id: int, db: AsyncSession = Depends(get_db)):
     b = float(market.b_parameter)
     q_yes = float(amm_state.q_yes)
     q_no = float(amm_state.q_no)
-    exp_yes = math.exp(q_yes / b)
-    exp_no = math.exp(q_no / b)
-    price_yes = exp_yes / (exp_yes + exp_no)
-    price_no = exp_no / (exp_yes + exp_no)
+    if b <= 0:
+        raise HTTPException(status_code=500, detail="Invalid market liquidity parameter")
+
+    # Stable logistic form of LMSR price avoids exp overflow for large share counts.
+    delta = (q_yes - q_no) / b
+    if delta >= 0:
+        e = math.exp(-delta)
+        price_yes = 1.0 / (1.0 + e)
+    else:
+        e = math.exp(delta)
+        price_yes = e / (1.0 + e)
+    price_no = 1.0 - price_yes
     return {"price_yes": price_yes, "price_no": price_no}
 
 @app.get("/markets/{market_id}/orderbook", response_model=schemas.OrderbookResponse)

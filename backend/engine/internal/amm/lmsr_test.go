@@ -107,8 +107,8 @@ func TestExtremeValues(t *testing.T) {
 	// Test massive numbers to ensure no NaNs
 	b := 100.0
 	cost := CalculateCostForShares(1e6, 0, b, 1000, true)
-	if math.IsNaN(cost) {
-		t.Logf("Warning: Cost is NaN for extremely large values, consider implementing LogSumExp trick.")
+	if math.IsNaN(cost) || math.IsInf(cost, 0) {
+		t.Errorf("Expected finite cost for extreme values, got %v", cost)
 	}
 }
 

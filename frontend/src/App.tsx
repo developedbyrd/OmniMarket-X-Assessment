@@ -2,8 +2,11 @@ import { Routes, Route, Link } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { MarketView } from './pages/MarketView';
 import { Activity } from 'lucide-react';
+import { useUserProfile } from './hooks/useUserProfile';
 
 function App() {
+  const { user } = useUserProfile();
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 font-sans">
       <nav className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-xl sticky top-0 z-50">
@@ -14,10 +17,13 @@ function App() {
           </Link>
           <div className="flex items-center gap-4">
             <div className="bg-slate-800 px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-slate-700/50">
-              User ID: 1
+              User ID: {user?.id ?? 1}
             </div>
             <div className="bg-emerald-500/10 text-emerald-400 px-4 py-1.5 rounded-full text-sm font-semibold border border-emerald-500/20">
-              Balance: $1,000.00
+              Balance: ${Number(user?.balance ?? 1000).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
           </div>
         </div>
