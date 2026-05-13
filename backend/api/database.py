@@ -15,6 +15,13 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+# Render commonly provides postgres:// or postgresql:// URLs.
+# SQLAlchemy async engine needs postgresql+asyncpg://.
+if settings.database_url.startswith("postgres://"):
+    settings.database_url = settings.database_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif settings.database_url.startswith("postgresql://") and "+asyncpg" not in settings.database_url:
+    settings.database_url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 engine = create_async_engine(
     settings.database_url,
     echo=False,
